@@ -1,0 +1,38 @@
+[
+  {
+    "id": 1,
+    "name": "Masaje relajante",
+    "description": "Masaje corporal para relajación y bienestar",
+    "duration": 60,
+    "price": 80000,
+    "category": "Bienestar",
+    "available": true
+  },
+  {
+    "id": 2,
+    "name": "Manicure",
+    "description": "Servicio de manicure tradicional",
+    "duration": 45,
+    "price": 40000,
+    "category": "Belleza",
+    "available": true
+  },
+  {
+    "id": 3,
+    "name": "Corte de cabello",
+    "description": "Corte de cabello para dama",
+    "duration": 30,
+    "price": 35000,
+    "category": "Belleza",
+    "available": true
+  },
+  {
+    "id": 4,
+    "name": "Limpieza facial",
+    "description": "Limpieza facial profunda",
+    "duration": 60,
+    "price": 60000,
+    "category": "Belleza",
+    "available": true
+  }
+]
