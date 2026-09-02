@@ -1,9 +1,8 @@
-
-import ServiceManager from "./managers/ServiceManager.js";
+import express from "express";
 import "./config/env.config.js";
 
+const app = express();
 
-const serviceManager = new ServiceManager();
+app.use(express.json());
 
-console.log("Puerto:", process.env.PORT);
-console.log("Entorno:", process.env.NODE_ENV);
+export default app;
