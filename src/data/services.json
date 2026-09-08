@@ -1,14 +1,5 @@
 [
   {
-    "id": 1,
-    "name": "Masaje relajante",
-    "description": "Masaje corporal para relajación y bienestar",
-    "duration": 60,
-    "price": 80000,
-    "category": "Bienestar",
-    "available": true
-  },
-  {
     "id": 2,
     "name": "Manicure",
     "description": "Servicio de manicure tradicional",
@@ -33,6 +24,15 @@
     "duration": 60,
     "price": 60000,
     "category": "Belleza",
+    "available": true
+  },
+  {
+    "id": 5,
+    "name": "Consulta nutricional",
+    "description": "Valoración inicial",
+    "duration": 60,
+    "price": 120000,
+    "category": "Salud",
     "available": true
   }
 ]

@@ -39,7 +39,8 @@ Las variables de entorno son cargadas mediante `dotenv` y validadas al iniciar l
 Para ejecutar la aplicación con Node.js:
 
 ```bash
-node src/app.js
+npm start
+node src/server.js
 ```
 
 La aplicación valida las variables de entorno antes de continuar con su ejecución.
@@ -185,6 +186,7 @@ sistema-turnos/
 │
 └── src/
     ├── app.js
+    ├── server.js
     │
     ├── config/
     │   └── env.config.js
@@ -192,9 +194,25 @@ sistema-turnos/
     ├── managers/
     │   └── ServiceManager.js
     │
+    ├── routes/
+    │   └── services.router.js
+    │
     └── data/
         └── services.json
 ```
+
+## Endpoints
+
+- GET /api/services
+- GET /api/services/:sid
+- POST /api/services
+- PUT /api/services/:sid
+- DELETE /api/services/:sid
+
+El endpoint GET /api/services acepta filtros por query params:
+
+- ?category=Belleza
+- ?available=true
 
 ## Autor
 
