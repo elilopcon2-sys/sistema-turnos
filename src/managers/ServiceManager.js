@@ -1,10 +1,24 @@
-import services from "../data/services.json" with { type: "json" };
 import fs from "fs";
 
 class ServiceManager {
 
-    getServices() {
-    return services;
+  async readServices() {
+  try {
+    const data = await fs.readFile(
+      "./src/data/services.json",
+      "utf-8"
+    );
+
+    return JSON.parse(data);
+
+  } catch (error) {
+    console.log("Error al leer los servicios:", error.message);
+    return [];
+  }
+}
+
+    async getServices() {
+    return await this.readServices();
   }
 
   getServiceById(id) {
