@@ -87,17 +87,18 @@ class ServiceManager {
     return updatedService;
   }
 
-  deleteService(id) {
-  const index = services.findIndex(service => service.id === id);
+    async deleteService(id) {
+    const services = await this.readServices();  
+    const index = services.findIndex(service => service.id === id);
 
-  if (index === -1) {
+    if (index === -1) {
     return null;
-  }
+   } 
 
-  const deletedService = services.splice(index, 1);
-  this.saveServices();
+    const deletedService = services.splice(index, 1);
+    await this.writeServices(services);
 
-  return deletedService[0];
+    return deletedService[0];
   }
 }
 
