@@ -27,8 +27,8 @@ class ServiceManager {
     return services.find(service => service.id === id)|| null;
   }
 
-  saveServices() {
-  fs.writeFileSync(
+   async writeServices(services) {
+   await fs.writeFile(
     "./src/data/services.json",
     JSON.stringify(services, null, 2)
   );
