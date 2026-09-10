@@ -34,7 +34,7 @@ class ServiceManager {
   );
   }
   
-  addService(serviceData) {
+  async addService(serviceData) {
 
   if (
     !serviceData.name ||
@@ -47,18 +47,20 @@ class ServiceManager {
     return null;
   }
 
-  const newId = services.length
+   const services = await this.readServices();
+
+    const newId = services.length
     ? Math.max(...services.map(service => service.id)) + 1
     : 1;
 
-  const newService = {
+   const newService = {
     id: newId,
     ...serviceData
   };
 
   services.push(newService);
 
-  this.saveServices();
+  await this.writeServices(services);
 
   return newService;
   }
