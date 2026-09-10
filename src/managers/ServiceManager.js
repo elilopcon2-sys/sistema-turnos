@@ -21,8 +21,10 @@ class ServiceManager {
     return await this.readServices();
   }
 
-  getServiceById(id) {
-  return services.find(service => service.id === id)|| null;
+   async getServiceById(id) {
+    const services = await this.readServices();
+
+    return services.find(service => service.id === id)|| null;
   }
 
   saveServices() {
