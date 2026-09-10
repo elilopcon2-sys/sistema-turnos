@@ -65,24 +65,26 @@ class ServiceManager {
   return newService;
   }
 
-  updateService(id, updatedData) {
-  const index = services.findIndex(service => service.id === id);
+  async updateService(id, updatedData) {
 
-  if (index === -1) {
+    const services = await this.readServices();    
+    const index = services.findIndex(service => service.id === id);
+
+    if (index === -1) {
     return null;
   }
 
-  const updatedService = {
+    const updatedService = {
     ...services[index],
     ...updatedData,
     id: services[index].id
   };
+    
+    services[index] = updatedService;
+    await this.writeServices(services);
+  
 
-
-  services[index] = updatedService;
-  this.saveServices();
-
-  return updatedService;
+    return updatedService;
   }
 
   deleteService(id) {
