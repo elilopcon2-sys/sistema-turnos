@@ -24,6 +24,41 @@ class BookingManager {
   );
   }
   
+  async createBooking(bookingData) {
+  if (
+    !bookingData.clientName ||
+    !bookingData.clientEmail ||
+    !bookingData.date ||
+    !bookingData.time ||
+    !bookingData.status
+  ) {
+    return null;
+  }
+
+  const bookings = await this.readBookings();
+
+  const newId = bookings.length
+    ? Math.max(...bookings.map(booking => booking.id)) + 1
+    : 1;
+
+  const newBooking = {
+    id: newId,
+    clientName: bookingData.clientName,
+    clientEmail: bookingData.clientEmail,
+    date: bookingData.date,
+    time: bookingData.time,
+    status: bookingData.status,
+    services: []
+  };
+
+  bookings.push(newBooking);
+
+  await this.writeBookings(bookings);
+
+  return newBooking;
+}
+
+
 }
 
 export default BookingManager;
