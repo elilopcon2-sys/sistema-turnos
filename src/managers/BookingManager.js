@@ -1,4 +1,5 @@
 import fs from "fs/promises";
+import ServiceManager from "./ServiceManager.js";
 
 class BookingManager {
 
@@ -57,7 +58,13 @@ class BookingManager {
 
   return newBooking;
 }
-  async addServiceToBooking(bookingId, serviceId) {
+ async getBookingById(id) {
+  const bookings = await this.readBookings();
+
+  return bookings.find(booking => booking.id === id) || null;
+ }
+ 
+ async addServiceToBooking(bookingId, serviceId) {
   const bookings = await this.readBookings();
 
   const booking = bookings.find(
@@ -67,7 +74,31 @@ class BookingManager {
   if (!booking) {
     return null;
   }
- }
+
+  const serviceManager = new ServiceManager();
+  const service = await serviceManager.getServiceById(serviceId);
+
+  if (!service) {
+    return null;
+  }
+
+  const existingService = booking.services.find(
+    item => item.service === serviceId
+  );
+
+  if (existingService) {
+    existingService.quantity += 1;
+  } else {
+    booking.services.push({
+      service: serviceId,
+      quantity: 1
+    });
+  }
+
+  await this.writeBookings(bookings);
+
+  return booking;
+}
 
 }
 
