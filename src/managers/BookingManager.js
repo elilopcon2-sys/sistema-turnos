@@ -57,7 +57,17 @@ class BookingManager {
 
   return newBooking;
 }
+  async addServiceToBooking(bookingId, serviceId) {
+  const bookings = await this.readBookings();
 
+  const booking = bookings.find(
+    booking => booking.id === bookingId
+  );
+
+  if (!booking) {
+    return null;
+  }
+ }
 
 }
 
