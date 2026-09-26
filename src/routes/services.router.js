@@ -45,7 +45,7 @@ router.post("/", async (req, res) => {
 
   if (!newService) {
     return res.status(400).json({
-      message: "Faltan campos obligatorios"
+      message: "Faltan campos obligatorios o tienen valores inválidos"
     });
   }
 

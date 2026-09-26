@@ -34,5 +34,14 @@
     "price": 120000,
     "category": "Salud",
     "available": true
+  },
+  {
+    "id": 6,
+    "name": "Servicio de prueba",
+    "description": "Prueba de ID automático",
+    "duration": 30,
+    "price": 1000,
+    "category": "Belleza",
+    "available": false
   }
 ]

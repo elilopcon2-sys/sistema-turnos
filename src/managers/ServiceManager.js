@@ -36,16 +36,22 @@ class ServiceManager {
   
   async addService(serviceData) {
 
-  if (
-    !serviceData.name ||
-    !serviceData.description ||
-    !serviceData.duration ||
-    !serviceData.price ||
-    !serviceData.category ||
-    serviceData.available === undefined
-  ) {
+    if (
+    !serviceData ||
+    typeof serviceData.name !== "string" ||
+    serviceData.name.trim() === "" ||
+    typeof serviceData.description !== "string" ||
+    serviceData.description.trim() === "" ||
+    !Number.isFinite(serviceData.duration) ||
+    serviceData.duration <= 0 ||
+    !Number.isFinite(serviceData.price) ||
+    serviceData.price < 0 ||
+    typeof serviceData.category !== "string" ||
+    serviceData.category.trim() === "" ||
+    typeof serviceData.available !== "boolean"
+   ) {
     return null;
-  }
+   }
 
    const services = await this.readServices();
 
@@ -84,7 +90,21 @@ class ServiceManager {
     ...updatedData,
     id: services[index].id
   };
-    
+  if (
+    typeof updatedService.name !== "string" ||
+    updatedService.name.trim() === "" ||
+    typeof updatedService.description !== "string" ||
+    updatedService.description.trim() === "" ||
+    !Number.isFinite(updatedService.duration) ||
+    updatedService.duration <= 0 ||
+    !Number.isFinite(updatedService.price) ||
+    updatedService.price < 0 ||
+    typeof updatedService.category !== "string" ||
+    updatedService.category.trim() === "" ||
+    typeof updatedService.available !== "boolean"
+  ) {
+    throw new Error("Los datos del servicio son inválidos");
+  }
     services[index] = updatedService;
     await this.writeServices(services);
   
