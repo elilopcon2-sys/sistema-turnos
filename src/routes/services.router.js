@@ -52,7 +52,7 @@ router.post("/", async (req, res) => {
   res.status(201).json(newService);
 });
 
-router.put("/:sid", async  (req, res) => {
+router.put("/:sid", async  (req, res, next) => {
 
   try{
   const id = Number(req.params.sid);
