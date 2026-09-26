@@ -55,7 +55,12 @@ class ServiceManager {
 
    const newService = {
     id: newId,
-    ...serviceData
+    name: serviceData.name,
+    description: serviceData.description,
+    duration: serviceData.duration,
+    price: serviceData.price,
+    category: serviceData.category,
+    available: serviceData.available
   };
 
   services.push(newService);
