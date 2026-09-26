@@ -53,6 +53,8 @@ router.post("/", async (req, res) => {
 });
 
 router.put("/:sid", async  (req, res) => {
+
+  try{
   const id = Number(req.params.sid);
 
   const updatedService = await serviceManager.updateService(id, req.body);
@@ -62,8 +64,17 @@ router.put("/:sid", async  (req, res) => {
       message: "Servicio no encontrado"
     });
   }
+  
+   return res.status(200).json(updatedService);
+  } catch (error) {
+    if (error.message === "Los datos del servicio son inválidos") {
+      return res.status(400).json({
+        message: error.message
+      });
+    }
 
-  res.status(200).json(updatedService);
+    next(error);
+  }
 });
 
 router.delete("/:sid", async (req, res) => {
