@@ -1,219 +1,200 @@
-# Sistema de Turnos
+# Sistema de Turnos y Reservas
 
-Proyecto desarrollado en Node.js para gestionar los servicios de un sistema de turnos y reservas mediante una clase `ServiceManager`.
+API REST desarrollada con Node.js, Express y FileSystem.
+Permite gestionar servicios y reservas, con persistencia en archivos JSON.
 
 ## Instalación
 
-Para instalar el proyecto, primero clona el repositorio y entra en la carpeta del proyecto.
+Clonar el repositorio:
 
-Luego instala las dependencias con:
+```bash
+git clone https://github.com/elilopcon2-sys/sistema-turnos.git
+cd sistema-turnos
+```
+
+Instalar las dependencias:
 
 ```bash
 npm install
 ```
 
-## Variables de entorno
-
-El proyecto utiliza variables de entorno para configurar el puerto de ejecución y el entorno de desarrollo.
-
-Se debe crear un archivo `.env` en la raíz del proyecto con las siguientes variables:
+Crear un archivo `.env` en la raíz del proyecto:
 
 ```env
 PORT=8080
 NODE_ENV=development
 ```
 
-El archivo `.env` no debe subirse al repositorio, ya que puede contener información de configuración privada.
-
-También se incluye un archivo `.env.example` como referencia:
-
-```env
-PORT=
-NODE_ENV=
-```
-
-Las variables de entorno son cargadas mediante `dotenv` y validadas al iniciar la aplicación.
+También se incluye `.env.example` como referencia.
 
 ## Ejecución
 
-Para ejecutar la aplicación con Node.js:
-
 ```bash
 npm start
-node src/server.js
 ```
 
-La aplicación valida las variables de entorno antes de continuar con su ejecución.
+El servidor se ejecuta en `http://localhost:8080`.
 
-## Recurso `services`
+## Estructura
 
-El recurso `services` contiene los servicios disponibles en el sistema de turnos y reservas.
+```text
+src/
+├── app.js
+├── server.js
+├── config/
+│   └── env.config.js
+├── routes/
+│   ├── services.router.js
+│   └── bookings.router.js
+├── managers/
+│   ├── ServiceManager.js
+│   └── BookingManager.js
+└── data/
+    ├── services.json
+    └── bookings.json
+```
 
-Cada servicio tiene la siguiente estructura:
+## Servicios
 
-```js
+Cada servicio contiene:
+`id`, `name`, `description`, `duration`, `price`, `category` y `available`.
+
+| Método | Ruta | Descripción |
+|---|---|---|
+| GET | /api/services | Consultar todos los servicios |
+| GET | /api/services/:sid | Consultar un servicio |
+| POST | /api/services | Crear un servicio |
+| PUT | /api/services/:sid | Actualizar un servicio |
+| DELETE | /api/services/:sid | Eliminar un servicio |
+
+Ejemplo de body para crear un servicio:
+
+```json
 {
-  id,
-  name,
-  description,
-  duration,
-  price,
-  category,
-  available
+  "name": "Manicure",
+  "description": "Servicio de manicure tradicional",
+  "duration": 45,
+  "price": 40000,
+  "category": "Belleza",
+  "available": true
 }
 ```
 
-### Campos
+El ID se genera automáticamente y no debe enviarse en el body.
+No se permite modificar el ID mediante PUT.
 
-* `id`: identificador único del servicio. Se genera automáticamente al agregar un nuevo servicio.
-* `name`: nombre del servicio.
-* `description`: descripción del servicio.
-* `duration`: duración del servicio en minutos.
-* `price`: precio del servicio.
-* `category`: categoría a la que pertenece el servicio.
-* `available`: indica si el servicio está disponible.
+Validaciones:
+- Nombre, descripción y categoría deben ser textos no vacíos.
+- Duración debe ser un número mayor que cero.
+- Precio debe ser un número igual o mayor que cero.
+- Disponible debe ser un booleano: `true` o `false`.
 
-## ServiceManager
+PUT permite enviar únicamente los campos que se desean modificar:
 
-La clase `ServiceManager` se encarga de gestionar los servicios mediante operaciones CRUD:
-
-* Crear servicios.
-* Consultar servicios.
-* Actualizar servicios.
-* Eliminar servicios.
-
-### `getServices()`
-
-Devuelve todos los servicios registrados.
-
-```js
-serviceManager.getServices();
+```json
+{
+  "price": 45000
+}
 ```
 
-### `getServiceById(id)`
-
-Busca un servicio utilizando su identificador.
-
-```js
-serviceManager.getServiceById(2);
-```
-
-Devuelve el servicio encontrado o `null` si no existe.
-
-### `addService(serviceData)`
-
-Agrega un nuevo servicio.
-
-El `id` se genera automáticamente, por lo que no debe enviarse dentro de los datos del servicio.
-
-```js
-serviceManager.addService({
-  name: "Pedicure",
-  description: "Servicio de pedicure tradicional",
-  duration: 50,
-  price: 45000,
-  category: "Belleza",
-  available: true
-});
-```
-
-El método valida que estén presentes los siguientes campos:
-
-* `name`
-* `description`
-* `duration`
-* `price`
-* `category`
-* `available`
-
-Si falta alguno de los campos requeridos, el método devuelve `null`.
-
-### `updateService(id, updatedData)`
-
-Actualiza la información de un servicio existente.
-
-El `id` se recibe como identificador del servicio y no puede ser modificado.
-
-```js
-serviceManager.updateService(2, {
-  price: 45000
-});
-```
-
-Si el servicio no existe, devuelve `null`.
-
-### `deleteService(id)`
-
-Elimina un servicio existente utilizando su identificador.
-
-```js
-serviceManager.deleteService(3);
-```
-
-Devuelve el servicio eliminado o `null` si no existe.
-
-## Persistencia de datos
-
-El proyecto utiliza el módulo `fs` de Node.js para guardar los cambios realizados sobre los servicios en el archivo:
+GET /api/services permite filtrar por categoría y disponibilidad:
 
 ```text
-src/data/services.json
+/api/services?category=Belleza
+/api/services?available=true
 ```
 
-Los métodos `addService()`, `updateService()` y `deleteService()` guardan los cambios realizados en el archivo mediante el método `saveServices()`.
+## Reservas
 
-## Tecnologías utilizadas
+Cada reserva contiene:
+`id`, `clientName`, `clientEmail`, `date`, `time`, `status` y `services`.
 
-* Node.js
-* JavaScript
-* ESM (ECMAScript Modules)
-* dotenv
-* Express
-* File System (`fs`)
-* JSON
+| Método | Ruta | Descripción |
+|---|---|---|
+| POST | /api/bookings | Crear una reserva |
+| GET | /api/bookings/:bid | Consultar una reserva |
+| POST | /api/bookings/:bid/services/:sid | Agregar un servicio a una reserva |
 
-## Estructura del proyecto
+Ejemplo de body para crear una reserva:
+
+```json
+{
+  "clientName": "Cliente de prueba",
+  "clientEmail": "cliente@example.com",
+  "date": "2026-09-28",
+  "time": "10:00",
+  "status": "pending"
+}
+```
+
+Estos cinco campos son obligatorios. La reserva recibe un ID
+automático y se crea con el array `services` vacío.
+
+Para agregar un servicio, enviar una petición POST sin body a:
 
 ```text
-sistema-turnos/
-│
-├── .env
-├── .env.example
-├── .gitignore
-├── package.json
-├── package-lock.json
-├── README.md
-│
-└── src/
-    ├── app.js
-    ├── server.js
-    │
-    ├── config/
-    │   └── env.config.js
-    │
-    ├── managers/
-    │   └── ServiceManager.js
-    │
-    ├── routes/
-    │   └── services.router.js
-    │
-    └── data/
-        └── services.json
+/api/bookings/1/services/2
 ```
 
-## Endpoints
+En este ejemplo, `1` es el ID de la reserva y `2` es el ID del
+servicio. Ambos deben existir.
 
-- GET /api/services
-- GET /api/services/:sid
-- POST /api/services
-- PUT /api/services/:sid
-- DELETE /api/services/:sid
+El servicio se guarda dentro de la reserva con esta estructura:
 
-El endpoint GET /api/services acepta filtros por query params:
+```json
+{
+  "service": 2,
+  "quantity": 1
+}
+```
 
-- ?category=Belleza
-- ?available=true
+Si se agrega nuevamente el mismo servicio, aumenta `quantity`
+sin duplicar el elemento del array.
 
-## Autor
+## Persistencia
+
+Los managers utilizan `fs/promises` para leer y escribir:
+
+- `src/data/services.json`
+- `src/data/bookings.json`
+
+Los cambios se guardan en estos archivos y se conservan al
+reiniciar el servidor.
+
+Si un archivo no existe, su lectura devuelve un array vacío.
+Otros errores de lectura se propagan para evitar tratar los
+datos dañados como una lista vacía.
+
+## Respuestas HTTP
+
+- `200`: consulta, actualización, eliminación o incorporación
+  de un servicio a una reserva realizada correctamente.
+- `201`: servicio o reserva creado.
+- `400`: campos obligatorios ausentes o datos de servicio inválidos.
+- `404`: servicio o reserva no encontrado.
+
+## Pruebas manuales
+
+Las peticiones pueden ejecutarse con Postman.
+
+Se comprobaron:
+- Creación y consulta de reservas.
+- Incorporación de servicios e incremento de cantidades.
+- Persistencia de reservas después de reiniciar el servidor.
+- Rechazo de servicios y reservas inexistentes al agregar servicios.
+- Rechazo de reservas sin campos obligatorios.
+- Validación de precios negativos al crear y actualizar servicios.
+- Generación automática y protección del ID de servicios.
+- Eliminación de un servicio y consulta posterior con respuesta 404.
+
+## Tecnologías
+
+- Node.js
+- Express
+- JavaScript con módulos ESM
+- FileSystem (`fs/promises`)
+- dotenv
+
+## Autora
 
 Elizabeth Lopez Conde
