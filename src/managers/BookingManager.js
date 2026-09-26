@@ -13,9 +13,12 @@ class BookingManager {
       return JSON.parse(data);
 
     } catch (error) {
-      console.log("Error al leer las reservas:", error.message);
-      return [];
-    }    
+      if (error.code === "ENOENT") {
+        return [];
+      }
+
+      throw error;
+    }
   }
 
   async writeBookings(bookings) {

@@ -1,3 +1,4 @@
+import { error } from "console";
 import fs from "fs/promises";
 
 class ServiceManager {
@@ -12,10 +13,13 @@ class ServiceManager {
     return JSON.parse(data);
 
   } catch (error) {
-    console.log("Error al leer los servicios:", error.message);
+  if (error.code === "ENOENT") {
     return [];
   }
-}
+
+  throw error;
+  }
+ }
 
     async getServices() {
     return await this.readServices();
