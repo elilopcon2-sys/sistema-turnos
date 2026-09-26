@@ -46,6 +46,9 @@ src/
 ├── routes/
 │   ├── services.router.js
 │   └── bookings.router.js
+├── controllers/
+│   ├── services.controller.js
+│   └── bookings.controller.js
 ├── managers/
 │   ├── ServiceManager.js
 │   └── BookingManager.js
@@ -53,6 +56,23 @@ src/
     ├── services.json
     └── bookings.json
 ```
+## Organización de la API
+
+La API separa sus responsabilidades en tres capas:
+
+- Routers: definen los endpoints y los conectan con los controllers.
+- Controllers: leen params, query y body, llaman a los managers
+  y devuelven las respuestas HTTP.
+- Managers: manejan la lógica de datos y la persistencia en
+  archivos JSON, sin utilizar req ni res.
+
+El controller de reservas comprueba que la reserva y el servicio
+existan antes de agregarlo. Para consultar el servicio utiliza
+ServiceManager.
+
+Cada servicio dentro de una reserva se guarda únicamente como
+{ service: id, quantity }. Si se agrega nuevamente, aumenta su
+cantidad sin duplicar el elemento.
 
 ## Servicios
 
@@ -170,7 +190,8 @@ datos dañados como una lista vacía.
 - `200`: consulta, actualización, eliminación o incorporación
   de un servicio a una reserva realizada correctamente.
 - `201`: servicio o reserva creado.
-- `400`: campos obligatorios ausentes o datos de servicio inválidos.
+- `400`: IDs inválidos, campos obligatorios ausentes, datos de
+  servicio inválidos o body vacío al actualizar un servicio.
 - `404`: servicio o reserva no encontrado.
 
 ## Pruebas manuales

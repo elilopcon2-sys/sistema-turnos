@@ -1,5 +1,4 @@
 import fs from "fs/promises";
-import ServiceManager from "./ServiceManager.js";
 
 class BookingManager {
 
@@ -76,16 +75,7 @@ class BookingManager {
 
   if (!booking) {
     return null;
-  }
-
-  const serviceManager = new ServiceManager();
-  const service = await serviceManager.getServiceById(serviceId);
-
-  if (!service) {
-    return null;
-  }
-
-  const existingService = booking.services.find(
+  }  const existingService = booking.services.find(
     item => item.service === serviceId
   );
 
