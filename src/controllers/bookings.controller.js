@@ -1,29 +1,18 @@
-import BookingManager from "../managers/BookingManager.js";
-import ServiceManager from "../managers/ServiceManager.js";
+import BookingsService from "../services/bookings.service.js";
+const bookingsService = new BookingsService();
 
-const bookingManager = new BookingManager();
-const serviceManager = new ServiceManager();
 
 export const createBooking = async (req, res) => {
-  if (
-    !req.body ||
-    typeof req.body !== "object" ||
-    Array.isArray(req.body)
-  ) {
+  try {
+    const newBooking = await bookingsService.createBooking(req.body);
+
+    return res.status(201).json(newBooking);
+
+  } catch (error) {
     return res.status(400).json({
-      message: "Faltan campos obligatorios"
+      message: error.message
     });
   }
-
-  const newBooking = await bookingManager.createBooking(req.body);
-
-  if (!newBooking) {
-    return res.status(400).json({
-      message: "Faltan campos obligatorios"
-    });
-  }
-
-  return res.status(201).json(newBooking);
 };
 
 export const getBookingById = async (req, res) => {
@@ -35,15 +24,20 @@ export const getBookingById = async (req, res) => {
     });
   }
 
-  const booking = await bookingManager.getBookingById(id);
+  try {
+    const booking = await bookingsService.getBookingById(id);
 
-  if (!booking) {
-    return res.status(404).json({
-      message: "Reserva no encontrada"
-    });
+    return res.status(200).json(booking);
+
+  } catch (error) {
+    if (error.message === "Reserva no encontrada") {
+      return res.status(404).json({
+        message: error.message
+      });
+    }
+
+    throw error;
   }
-
-  return res.status(200).json(booking);
 };
 export const addServiceToBooking = async (req, res) => {
   const bookingId = Number(req.params.bid);
@@ -60,32 +54,24 @@ export const addServiceToBooking = async (req, res) => {
     });
   }
 
-  const booking = await bookingManager.getBookingById(bookingId);
+  try {
+    const updatedBooking = await bookingsService.addServiceToBooking(
+      bookingId,
+      serviceId
+    );
 
-  if (!booking) {
-    return res.status(404).json({
-      message: "Reserva o servicio no encontrado"
-    });
+    return res.status(200).json(updatedBooking);
+
+  } catch (error) {
+    if (
+      error.message === "Reserva no encontrada" ||
+      error.message === "Servicio no encontrado"
+    ) {
+      return res.status(404).json({
+        message: error.message
+      });
+    }
+
+    throw error;
   }
-
-  const service = await serviceManager.getServiceById(serviceId);
-
-  if (!service) {
-    return res.status(404).json({
-      message: "Reserva o servicio no encontrado"
-    });
-  }
-
-  const updatedBooking = await bookingManager.addServiceToBooking(
-    bookingId,
-    serviceId
-  );
-
-  if (!updatedBooking) {
-    return res.status(404).json({
-      message: "Reserva o servicio no encontrado"
-    });
-  }
-
-  return res.status(200).json(updatedBooking);
 };

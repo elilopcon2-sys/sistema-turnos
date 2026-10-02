@@ -10,6 +10,10 @@
       {
         "service": 2,
         "quantity": 2
+      },
+      {
+        "service": 3,
+        "quantity": 1
       }
     ]
   },
@@ -24,6 +28,20 @@
       {
         "service": 2,
         "quantity": 2
+      }
+    ]
+  },
+  {
+    "id": 3,
+    "clientName": "Liz",
+    "clientEmail": "liz@example.com",
+    "date": "2026-10-02",
+    "time": "18:30",
+    "status": "pending",
+    "services": [
+      {
+        "service": 3,
+        "quantity": 1
       }
     ]
   }
