@@ -75,7 +75,26 @@ async update(id, data) {
 
   return updatedService;
 }
+async delete(id) {
+  const services = await this.getAll();
 
+  const index = services.findIndex(
+    service => service.id === id
+  );
+
+  if (index === -1) {
+    return null;
+  }
+
+  const deletedService = services.splice(index, 1)[0];
+
+  await fs.writeFile(
+    PATH,
+    JSON.stringify(services, null, 2)
+  );
+
+  return deletedService;
+}
 }
 
 export default ServicesDao;

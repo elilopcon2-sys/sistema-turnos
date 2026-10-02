@@ -1,25 +1,8 @@
-import ServiceManager from "../managers/ServiceManager.js";
-
-const serviceManager = new ServiceManager();
+import ServicesService from "../services/services.service.js";
+const servicesService = new ServicesService();
 
 export const getServices = async (req, res) => {
-  const { category, available } = req.query;
-
-  let services = await serviceManager.getServices();
-
-  if (category) {
-    services = services.filter(
-      service => service.category === category
-    );
-  }
-
-  if (available !== undefined) {
-    const availableBoolean = available === "true";
-
-    services = services.filter(
-      service => service.available === availableBoolean
-    );
-  }
+  const services = await servicesService.getServices(req.query);
 
   return res.status(200).json(services);
 };
@@ -33,26 +16,32 @@ export const getServiceById = async (req, res) => {
     });
   }
 
-  const service = await serviceManager.getServiceById(id);
+  try {
+    const service = await servicesService.getServiceById(id);
 
-  if (!service) {
-    return res.status(404).json({
-      message: "Servicio no encontrado"
-    });
+    return res.status(200).json(service);
+
+  } catch (error) {
+    if (error.message === "Servicio no encontrado") {
+      return res.status(404).json({
+        message: error.message
+      });
+    }
+
+    throw error;
   }
-
-  return res.status(200).json(service);
 };
 export const createService = async (req, res) => {
-  const newService = await serviceManager.addService(req.body);
+  try {
+    const newService = await servicesService.createService(req.body);
 
-  if (!newService) {
+    return res.status(201).json(newService);
+
+  } catch (error) {
     return res.status(400).json({
-      message: "Faltan campos obligatorios o tienen valores inválidos"
+      message: error.message
     });
   }
-
-  return res.status(201).json(newService);
 };
 
 export const updateService = async (req, res, next) => {
@@ -76,20 +65,25 @@ export const updateService = async (req, res, next) => {
   }
 
   try {
-    const updatedService = await serviceManager.updateService(
+    const updatedService = await servicesService.updateService(
       id,
       req.body
     );
 
-    if (!updatedService) {
+    return res.status(200).json(updatedService);
+
+  } catch (error) {
+    if (
+      error.message === "Servicio no encontrado"
+    ) {
       return res.status(404).json({
-        message: "Servicio no encontrado"
+        message: error.message
       });
     }
 
-    return res.status(200).json(updatedService);
-  } catch (error) {
-    if (error.message === "Los datos del servicio son inválidos") {
+    if (
+      error.message === "Los datos del servicio son inválidos"
+    ) {
       return res.status(400).json({
         message: error.message
       });
@@ -107,13 +101,18 @@ export const deleteService = async (req, res) => {
     });
   }
 
-  const deletedService = await serviceManager.deleteService(id);
+  try {
+    const deletedService = await servicesService.deleteService(id);
 
-  if (!deletedService) {
-    return res.status(404).json({
-      message: "Servicio no encontrado"
-    });
+    return res.status(200).json(deletedService);
+
+  } catch (error) {
+    if (error.message === "Servicio no encontrado") {
+      return res.status(404).json({
+        message: error.message
+      });
+    }
+
+    throw error;
   }
-
-  return res.status(200).json(deletedService);
 };
