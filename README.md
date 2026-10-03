@@ -56,23 +56,22 @@ src/
     ├── services.json
     └── bookings.json
 ```
-## Organización de la API
+## Arquitectura del proyecto
 
-La API separa sus responsabilidades en tres capas:
+El proyecto fue refactorizado utilizando una arquitectura en capas para separar responsabilidades y facilitar el mantenimiento y futuras migraciones de persistencia.
 
-- Routers: definen los endpoints y los conectan con los controllers.
-- Controllers: leen params, query y body, llaman a los managers
-  y devuelven las respuestas HTTP.
-- Managers: manejan la lógica de datos y la persistencia en
-  archivos JSON, sin utilizar req ni res.
+El flujo principal de la aplicación es:
 
-El controller de reservas comprueba que la reserva y el servicio
-existan antes de agregarlo. Para consultar el servicio utiliza
-ServiceManager.
+router → controller → service → repository → DAO → archivo JSON
 
-Cada servicio dentro de una reserva se guarda únicamente como
-{ service: id, quantity }. Si se agrega nuevamente, aumenta su
-cantidad sin duplicar el elemento.
+### Responsabilidad de cada capa
+
+- **Router:** define los endpoints y los conecta con los controllers.
+- **Controller:** recibe `req`, llama al service y responde con `res`.
+- **Service:** contiene las reglas de negocio y validaciones.
+- **Repository:** actúa como puente entre los services y los DAO.
+- **DAO:** accede directamente a los archivos JSON y realiza operaciones de persistencia.
+- **Data:** contiene los archivos `services.json` y `bookings.json`.
 
 ## Servicios
 
