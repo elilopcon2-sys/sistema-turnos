@@ -43,15 +43,21 @@ src/
 ├── server.js
 ├── config/
 │   └── env.config.js
-├── routes/
-│   ├── services.router.js
-│   └── bookings.router.js
 ├── controllers/
 │   ├── services.controller.js
 │   └── bookings.controller.js
-├── managers/
-│   ├── ServiceManager.js
-│   └── BookingManager.js
+├── services/
+│   ├── services.service.js
+│   └── bookings.service.js
+├── repositories/
+│   ├── services.repository.js
+│   └── bookings.repository.js
+├── dao/
+│   ├── services.dao.js
+│   └── bookings.dao.js
+├── routes/
+│   ├── services.router.js
+│   └── bookings.router.js
 └── data/
     ├── services.json
     └── bookings.json
@@ -172,7 +178,7 @@ sin duplicar el elemento del array.
 
 ## Persistencia
 
-Los managers utilizan `fs/promises` para leer y escribir:
+Los DAO utilizan `fs/promises` para leer y escribir:
 
 - `src/data/services.json`
 - `src/data/bookings.json`
