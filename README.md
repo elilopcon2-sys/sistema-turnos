@@ -1,7 +1,17 @@
 # Sistema de Turnos y Reservas
 
-API REST desarrollada con Node.js, Express y FileSystem.
-Permite gestionar servicios y reservas, con persistencia en archivos JSON.
+API REST desarrollada con Node.js, Express, MongoDB Atlas y Mongoose. Permite gestionar servicios y reservas mediante una arquitectura en capas.
+
+La aplicación conserva sus endpoints originales, pero la persistencia fue migrada desde archivos JSON hacia colecciones de MongoDB.
+
+## Tecnologías
+
+- Node.js
+- Express
+- JavaScript con módulos ESM
+- MongoDB Atlas
+- Mongoose
+- dotenv
 
 ## Instalación
 
@@ -12,7 +22,7 @@ git clone https://github.com/elilopcon2-sys/sistema-turnos.git
 cd sistema-turnos
 ```
 
-Instalar las dependencias:
+Instalar dependencias:
 
 ```bash
 npm install
@@ -23,9 +33,12 @@ Crear un archivo `.env` en la raíz del proyecto:
 ```env
 PORT=8080
 NODE_ENV=development
+MONGO_URI=<URI_DE_CONEXION_DE_MONGODB_ATLAS>
 ```
 
 También se incluye `.env.example` como referencia.
+
+> No se debe subir el archivo `.env` ni la carpeta `node_modules` al repositorio.
 
 ## Ejecución
 
@@ -33,7 +46,13 @@ También se incluye `.env.example` como referencia.
 npm start
 ```
 
-El servidor se ejecuta en `http://localhost:8080`.
+El servidor se ejecuta en:
+
+```text
+http://localhost:8080
+```
+
+Antes de iniciar Express, la aplicación intenta conectarse a MongoDB Atlas. Si la conexión falla, el servidor no inicia.
 
 ## Estructura
 
@@ -42,7 +61,8 @@ src/
 ├── app.js
 ├── server.js
 ├── config/
-│   └── env.config.js
+│   ├── env.config.js
+│   └── database.config.js
 ├── controllers/
 │   ├── services.controller.js
 │   └── bookings.controller.js
@@ -54,45 +74,95 @@ src/
 │   └── bookings.repository.js
 ├── dao/
 │   ├── services.dao.js
-│   └── bookings.dao.js
-├── routes/
-│   ├── services.router.js
-│   └── bookings.router.js
-└── data/
-    ├── services.json
-    └── bookings.json
+│   ├── bookings.dao.js
+│   └── models/
+│       ├── service.model.js
+│       ├── booking.model.js
+│       └── message.model.js
+└── routes/
+    ├── services.router.js
+    └── bookings.router.js
 ```
+
 ## Arquitectura del proyecto
 
-El proyecto fue refactorizado utilizando una arquitectura en capas para separar responsabilidades y facilitar el mantenimiento y futuras migraciones de persistencia.
+El proyecto utiliza una arquitectura en capas:
 
-El flujo principal de la aplicación es:
+```text
+router → controller → service → repository → DAO → MongoDB
+```
 
-router → controller → service → repository → DAO → archivo JSON
-
-### Responsabilidad de cada capa
+Responsabilidad de cada capa:
 
 - **Router:** define los endpoints y los conecta con los controllers.
 - **Controller:** recibe `req`, llama al service y responde con `res`.
-- **Service:** contiene las reglas de negocio y validaciones.
-- **Repository:** actúa como puente entre los services y los DAO.
-- **DAO:** accede directamente a los archivos JSON y realiza operaciones de persistencia.
-- **Data:** contiene los archivos `services.json` y `bookings.json`.
+- **Service:** contiene reglas de negocio y validaciones.
+- **Repository:** actúa como puente entre services y DAO.
+- **DAO:** accede a MongoDB mediante Mongoose.
+- **Models:** definen los schemas y colecciones de MongoDB.
+
+## Persistencia con MongoDB
+
+La aplicación usa MongoDB Atlas como base de datos.
+
+Colecciones utilizadas:
+
+- `services`
+- `bookings`
+- `messages`
+
+Los modelos principales son:
+
+- `ServiceModel`
+- `BookingModel`
+- `MessageModel`
+
+Cada documento tiene un `_id` interno de MongoDB. Además, servicios y reservas conservan un campo `id` numérico para mantener el comportamiento original de la API.
+
+## Relación entre reservas y servicios
+
+Una reserva puede tener uno o varios servicios asociados.
+
+En MongoDB, cada servicio dentro de una reserva se guarda como una referencia `ObjectId`:
+
+```js
+{
+  service: ObjectId("..."),
+  quantity: 1
+}
+```
+
+Mongoose utiliza `populate()` para consultar la información relacionada cuando es necesaria.
+
+La API mantiene IDs numéricos en sus rutas:
+
+```text
+POST /api/bookings/1/services/2
+```
+
+Internamente, el DAO convierte el ID numérico del servicio en su `ObjectId` antes de guardarlo en MongoDB.
 
 ## Servicios
 
 Cada servicio contiene:
-`id`, `name`, `description`, `duration`, `price`, `category` y `available`.
+
+- `id`
+- `name`
+- `description`
+- `duration`
+- `price`
+- `category`
+- `available`
 
 | Método | Ruta | Descripción |
 |---|---|---|
-| GET | /api/services | Consultar todos los servicios |
-| GET | /api/services/:sid | Consultar un servicio |
-| POST | /api/services | Crear un servicio |
-| PUT | /api/services/:sid | Actualizar un servicio |
-| DELETE | /api/services/:sid | Eliminar un servicio |
+| GET | `/api/services` | Consultar todos los servicios |
+| GET | `/api/services/:sid` | Consultar un servicio |
+| POST | `/api/services` | Crear un servicio |
+| PUT | `/api/services/:sid` | Actualizar un servicio |
+| DELETE | `/api/services/:sid` | Eliminar un servicio |
 
-Ejemplo de body para crear un servicio:
+### Crear un servicio
 
 ```json
 {
@@ -106,15 +176,10 @@ Ejemplo de body para crear un servicio:
 ```
 
 El ID se genera automáticamente y no debe enviarse en el body.
-No se permite modificar el ID mediante PUT.
 
-Validaciones:
-- Nombre, descripción y categoría deben ser textos no vacíos.
-- Duración debe ser un número mayor que cero.
-- Precio debe ser un número igual o mayor que cero.
-- Disponible debe ser un booleano: `true` o `false`.
+### Actualizar un servicio
 
-PUT permite enviar únicamente los campos que se desean modificar:
+Se pueden enviar únicamente los campos que se desean modificar:
 
 ```json
 {
@@ -122,49 +187,54 @@ PUT permite enviar únicamente los campos que se desean modificar:
 }
 ```
 
-GET /api/services permite filtrar por categoría y disponibilidad:
+### Filtros
 
 ```text
-/api/services?category=Belleza
-/api/services?available=true
+GET /api/services?category=Belleza
+GET /api/services?available=true
 ```
 
 ## Reservas
 
 Cada reserva contiene:
-`id`, `clientName`, `clientEmail`, `date`, `time`, `status` y `services`.
+
+- `id`
+- `clientName`
+- `clientEmail`
+- `date`
+- `time`
+- `status`
+- `services`
 
 | Método | Ruta | Descripción |
 |---|---|---|
-| POST | /api/bookings | Crear una reserva |
-| GET | /api/bookings/:bid | Consultar una reserva |
-| POST | /api/bookings/:bid/services/:sid | Agregar un servicio a una reserva |
+| POST | `/api/bookings` | Crear una reserva |
+| GET | `/api/bookings/:bid` | Consultar una reserva |
+| POST | `/api/bookings/:bid/services/:sid` | Agregar un servicio a una reserva |
 
-Ejemplo de body para crear una reserva:
+### Crear una reserva
 
 ```json
 {
   "clientName": "Cliente de prueba",
   "clientEmail": "cliente@example.com",
-  "date": "2026-09-28",
+  "date": "2026-10-03",
   "time": "10:00",
   "status": "pending"
 }
 ```
 
-Estos cinco campos son obligatorios. La reserva recibe un ID
-automático y se crea con el array `services` vacío.
+La reserva recibe un ID automático y se crea con el arreglo `services` vacío.
 
-Para agregar un servicio, enviar una petición POST sin body a:
+### Agregar un servicio a una reserva
+
+No se necesita body:
 
 ```text
-/api/bookings/1/services/2
+POST /api/bookings/1/services/2
 ```
 
-En este ejemplo, `1` es el ID de la reserva y `2` es el ID del
-servicio. Ambos deben existir.
-
-El servicio se guarda dentro de la reserva con esta estructura:
+La respuesta mantiene este formato:
 
 ```json
 {
@@ -173,53 +243,42 @@ El servicio se guarda dentro de la reserva con esta estructura:
 }
 ```
 
-Si se agrega nuevamente el mismo servicio, aumenta `quantity`
-sin duplicar el elemento del array.
-
-## Persistencia
-
-Los DAO utilizan `fs/promises` para leer y escribir:
-
-- `src/data/services.json`
-- `src/data/bookings.json`
-
-Los cambios se guardan en estos archivos y se conservan al
-reiniciar el servidor.
-
-Si un archivo no existe, su lectura devuelve un array vacío.
-Otros errores de lectura se propagan para evitar tratar los
-datos dañados como una lista vacía.
+Si se agrega nuevamente el mismo servicio, aumenta `quantity` sin duplicar el elemento.
 
 ## Respuestas HTTP
 
-- `200`: consulta, actualización, eliminación o incorporación
-  de un servicio a una reserva realizada correctamente.
-- `201`: servicio o reserva creado.
-- `400`: IDs inválidos, campos obligatorios ausentes, datos de
-  servicio inválidos o body vacío al actualizar un servicio.
+- `200`: consulta, actualización, eliminación o incorporación de servicio realizada correctamente.
+- `201`: servicio o reserva creado correctamente.
+- `400`: IDs inválidos, datos faltantes o datos inválidos.
 - `404`: servicio o reserva no encontrado.
 
 ## Pruebas manuales
 
-Las peticiones pueden ejecutarse con Postman.
+Las peticiones pueden probarse con Postman.
 
-Se comprobaron:
+Se verificó:
+
+- Conexión exitosa con MongoDB Atlas.
+- Creación y consulta de servicios.
 - Creación y consulta de reservas.
-- Incorporación de servicios e incremento de cantidades.
-- Persistencia de reservas después de reiniciar el servidor.
-- Rechazo de servicios y reservas inexistentes al agregar servicios.
-- Rechazo de reservas sin campos obligatorios.
-- Validación de precios negativos al crear y actualizar servicios.
-- Generación automática y protección del ID de servicios.
-- Eliminación de un servicio y consulta posterior con respuesta 404.
+- Agregar un servicio a una reserva.
+- Incremento de cantidad al agregar el mismo servicio nuevamente.
+- Persistencia de datos después de reiniciar el servidor.
+- Validación de campos obligatorios.
+- Rechazo de servicios o reservas inexistentes.
 
-## Tecnologías
+## Seguridad
 
-- Node.js
-- Express
-- JavaScript con módulos ESM
-- FileSystem (`fs/promises`)
-- dotenv
+El proyecto incluye `.env.example` como plantilla de configuración.
+
+Nunca se deben subir al repositorio:
+
+```text
+.env
+node_modules
+```
+
+La URI de MongoDB Atlas se configura únicamente mediante la variable de entorno `MONGO_URI`.
 
 ## Autora
 
