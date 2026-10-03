@@ -1,7 +1,13 @@
 import mongoose from "mongoose";
 
 const serviceSchema = new mongoose.Schema(
-  {
+  { 
+    id: {
+      type: Number,
+      required: true,
+      unique: true,
+      min: 1,
+    },
     name: {
       type: String,
       required: true,

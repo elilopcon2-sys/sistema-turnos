@@ -1,105 +1,69 @@
-import fs from "fs/promises";
-import path from "path";
-import { fileURLToPath } from "url";
+import { ServiceModel } from "./models/service.model.js";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const PATH = path.join(__dirname, "../data/services.json");
-
-class ServicesDao {
-
-async getAll() {
-    try {
-      const data = await fs.readFile(PATH, "utf-8");
-
-      return JSON.parse(data);
-
-    } catch (error) {
-      if (error.code === "ENOENT") {
-        return [];
-      }
-
-      throw error;
-    }
+const toDTO = (service) => {
+  if (!service) {
+    return null;
   }
-  
-async getById(id) {
-  const services = await this.getAll();
 
-  return services.find(
-    service => service.id === id
-  ) || null;
-}
+  const {
+    _id,
+    __v,
+    createdAt,
+    updatedAt,
+    ...serviceData
+  } = service;
 
-async create(data) {
-  const services = await this.getAll();
-
-  const newId = services.length
-    ? Math.max(...services.map(service => service.id)) + 1
-    : 1;
-
- const newService = {
-  ...data,
-  id: newId
+  return serviceData;
 };
 
-  services.push(newService);
+class ServicesDao {
+  async getAll() {
+    const services = await ServiceModel.find().lean();
 
-  await fs.writeFile(
-    PATH,
-    JSON.stringify(services, null, 2)
-  );
-
-  return newService;
-}
-
-async update(id, data) {
-  const services = await this.getAll();
-
-  const index = services.findIndex(
-    service => service.id === id
-  );
-
-  if (index === -1) {
-    return null;
+    return services.map(toDTO);
   }
 
-  const updatedService = {
-    ...services[index],
-    ...data,
-    id: services[index].id
-  };
+  async getById(id) {
+    const service = await ServiceModel.findOne({ id }).lean();
 
-  services[index] = updatedService;
-
-  await fs.writeFile(
-    PATH,
-    JSON.stringify(services, null, 2)
-  );
-
-  return updatedService;
-}
-async delete(id) {
-  const services = await this.getAll();
-
-  const index = services.findIndex(
-    service => service.id === id
-  );
-
-  if (index === -1) {
-    return null;
+    return toDTO(service);
   }
 
-  const deletedService = services.splice(index, 1)[0];
+  async create(data) {
+    const lastService = await ServiceModel.findOne()
+      .sort({ id: -1 })
+      .lean();
 
-  await fs.writeFile(
-    PATH,
-    JSON.stringify(services, null, 2)
-  );
+    const newId = lastService ? lastService.id + 1 : 1;
 
-  return deletedService;
-}
+    const newService = await ServiceModel.create({
+      ...data,
+      id: newId,
+    });
+
+    return toDTO(newService.toObject());
+  }
+
+  async update(id, data) {
+    const { id: ignoredId, _id: ignoredMongoId, ...updates } = data;
+
+    const updatedService = await ServiceModel.findOneAndUpdate(
+      { id },
+      updates,
+      {
+        new: true,
+        runValidators: true,
+      }
+    ).lean();
+
+    return toDTO(updatedService);
+  }
+
+  async delete(id) {
+    const deletedService = await ServiceModel.findOneAndDelete({ id }).lean();
+
+    return toDTO(deletedService);
+  }
 }
 
 export default ServicesDao;

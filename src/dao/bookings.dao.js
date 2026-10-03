@@ -1,83 +1,111 @@
-import fs from "fs/promises";
-import path from "path";
-import { fileURLToPath } from "url";
+import { BookingModel } from "./models/booking.model.js";
+import { ServiceModel } from "./models/service.model.js";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const PATH = path.join(__dirname, "../data/bookings.json");
-
-class BookingsDao {
-
-async getAll() {
-    try {
-      const data = await fs.readFile(PATH, "utf-8");
-
-      return JSON.parse(data);
-
-    } catch (error) {
-      if (error.code === "ENOENT") {
-        return [];
-      }
-
-      throw error;
-    }
-  }
-
-async getById(id) {
-  const bookings = await this.getAll();
-
-  return bookings.find(
-    booking => booking.id === id
-  ) || null;
-}
-async create(data) {
-  const bookings = await this.getAll();
-
-  const newId = bookings.length
-    ? Math.max(...bookings.map(booking => booking.id)) + 1
-    : 1;
-
-  const newBooking = {
-    id: newId,
-    ...data
-  };
-
-  bookings.push(newBooking);
-
-  await fs.writeFile(
-    PATH,
-    JSON.stringify(bookings, null, 2)
-  );
-
-  return newBooking;
-}
-async update(id, data) {
-  const bookings = await this.getAll();
-
-  const index = bookings.findIndex(
-    booking => booking.id === id
-  );
-
-  if (index === -1) {
+const toDTO = (booking) => {
+  if (!booking) {
     return null;
   }
 
-  const updatedBooking = {
-    ...bookings[index],
-    ...data,
-    id: bookings[index].id
+  const {
+    _id,
+    __v,
+    createdAt,
+    updatedAt,
+    services = [],
+    ...bookingData
+  } = booking;
+
+  return {
+    ...bookingData,
+    services: services.map((item) => ({
+      service:
+        item.service &&
+        typeof item.service === "object" &&
+        typeof item.service.id === "number"
+          ? item.service.id
+          : item.service,
+      quantity: item.quantity,
+    })),
   };
+};
 
-  bookings[index] = updatedBooking;
+const mapServiceReferences = async (services = []) => {
+  const serviceIds = services.map((item) => item.service);
 
-  await fs.writeFile(
-    PATH,
-    JSON.stringify(bookings, null, 2)
+  const serviceDocuments = await ServiceModel.find({
+    id: { $in: serviceIds },
+  })
+    .select("_id id")
+    .lean();
+
+  const servicesById = new Map(
+    serviceDocuments.map((service) => [service.id, service._id])
   );
 
-  return updatedBooking;
-}
+  return services.map((item) => {
+    const serviceObjectId = servicesById.get(item.service);
+
+    if (!serviceObjectId) {
+      throw new Error("Servicio no encontrado");
+    }
+
+    return {
+      service: serviceObjectId,
+      quantity: item.quantity,
+    };
+  });
+};
+
+class BookingsDao {
+  async getById(id) {
+    const booking = await BookingModel.findOne({ id })
+      .populate({
+        path: "services.service",
+        select: "id",
+      })
+      .lean();
+
+    return toDTO(booking);
+  }
+
+  async create(data) {
+    const lastBooking = await BookingModel.findOne()
+      .sort({ id: -1 })
+      .lean();
+
+    const newId = lastBooking ? lastBooking.id + 1 : 1;
+
+    const newBooking = await BookingModel.create({
+      ...data,
+      id: newId,
+    });
+
+    return toDTO(newBooking.toObject());
+  }
+
+  async update(id, data) {
+    const { id: ignoredId, _id: ignoredMongoId, ...updates } = data;
+
+    if (updates.services) {
+      updates.services = await mapServiceReferences(updates.services);
+    }
+
+    const updatedBooking = await BookingModel.findOneAndUpdate(
+      { id },
+      updates,
+      {
+        new: true,
+        runValidators: true,
+      }
+    )
+      .populate({
+        path: "services.service",
+        select: "id",
+      })
+      .lean();
+
+    return toDTO(updatedBooking);
+  }
 }
 
 export default BookingsDao;

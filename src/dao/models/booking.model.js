@@ -2,6 +2,12 @@ import mongoose from "mongoose";
 
 const bookingSchema = new mongoose.Schema(
   {
+    id: {
+     type: Number,
+     required: true,
+     unique: true,
+     min: 1,
+    },
     clientName: {
       type: String,
       required: true,
