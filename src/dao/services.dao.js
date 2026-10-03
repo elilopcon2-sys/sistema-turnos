@@ -39,10 +39,10 @@ async create(data) {
     ? Math.max(...services.map(service => service.id)) + 1
     : 1;
 
-  const newService = {
-    id: newId,
-    ...data
-  };
+ const newService = {
+  ...data,
+  id: newId
+};
 
   services.push(newService);
 
