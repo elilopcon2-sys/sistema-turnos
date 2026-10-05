@@ -1,0 +1,18 @@
+<h1>Reserva #{{booking.id}}</h1>
+
+<p>Cliente: {{booking.clientName}}</p>
+<p>Email: {{booking.clientEmail}}</p>
+<p>Fecha: {{booking.date}}</p>
+<p>Hora: {{booking.time}}</p>
+<p>Estado: {{booking.status}}</p>
+
+<h2>Servicios asociados</h2>
+
+{{#each booking.services}}
+  <article>
+    <p>Servicio: {{service}}</p>
+    <p>Cantidad: {{quantity}}</p>
+  </article>
+{{else}}
+  <p>Esta reserva todavía no tiene servicios asociados.</p>
+{{/each}}

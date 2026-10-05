@@ -1,0 +1,14 @@
+<a href="/services">← Volver a servicios</a>
+
+<h1>{{service.name}}</h1>
+
+<p>{{service.description}}</p>
+<p>Duración: {{service.duration}} minutos</p>
+<p>Precio: ${{service.price}}</p>
+<p>Categoría: {{service.category}}</p>
+
+{{#if service.available}}
+  <p>Disponible: Sí</p>
+{{else}}
+  <p>Disponible: No</p>
+{{/if}}
