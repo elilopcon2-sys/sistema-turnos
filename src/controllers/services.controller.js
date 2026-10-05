@@ -35,6 +35,12 @@ export const createService = async (req, res) => {
   try {
     const newService = await servicesService.createService(req.body);
 
+    const io = req.app.get("io");
+
+    if (io) {
+      io.emit("service:created", newService);
+    }
+
     return res.status(201).json(newService);
 
   } catch (error) {

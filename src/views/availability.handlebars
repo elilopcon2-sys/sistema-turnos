@@ -1,0 +1,16 @@
+<h1>Servicios actualmente disponibles</h1>
+
+<section id="available-services">
+  {{#each services}}
+    <article data-service-id="{{id}}">
+      <h2>{{name}}</h2>
+      <p>{{description}}</p>
+      <p>Duración: {{duration}} minutos</p>
+      <p>Precio: ${{price}}</p>
+      <p>Categoría: {{category}}</p>
+      <p>Disponible: Sí</p>
+    </article>
+  {{else}}
+    <p id="empty-availability">No hay servicios disponibles.</p>
+  {{/each}}
+</section>

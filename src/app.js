@@ -10,9 +10,10 @@ app.engine("handlebars", engine());
 app.set("view engine", "handlebars");
 app.set("views", "./src/views");
 app.use(express.json());
+app.use(express.static("public"));
 
 app.use("/api/services", servicesRouter); 
 app.use("/api/bookings", bookingsRouter);
-app.use("/", viewsRouter);
+app.use("/views", viewsRouter);
 
 export default app;
