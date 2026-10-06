@@ -11,28 +11,8 @@ class BookingsService {
   }
 
   async createBooking(data) {
-  if (
-    !data ||
-    !data.clientName ||
-    !data.clientEmail ||
-    !data.date ||
-    !data.time ||
-    !data.status
-  ) {
-    throw new Error("Faltan campos obligatorios");
+    return await this.repository.create(data);
   }
-
-  const newBooking = {
-    clientName: data.clientName,
-    clientEmail: data.clientEmail,
-    date: data.date,
-    time: data.time,
-    status: data.status,
-    services: []
-  };
-
-  return await this.bookingsRepository.create(newBooking);
-}
 async getBookingById(id) {
   const booking = await this.bookingsRepository.getById(id);
 

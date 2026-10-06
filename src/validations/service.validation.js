@@ -29,11 +29,9 @@ export const createServiceSchema = z.object({
       .trim()
       .min(2, "La categoría es obligatoria"),
 
-    available: z
-      .boolean({
-        message: "available debe ser true o false",
-      })
-      .optional(),
+    available: z.boolean({
+     message: "available debe ser true o false",
+        }),
   }),
 });
 

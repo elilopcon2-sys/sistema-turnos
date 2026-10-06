@@ -56,19 +56,7 @@ export const updateService = async (req, res, next) => {
     return res.status(400).json({
       message: "El ID del servicio debe ser un entero positivo"
     });
-  }
-
-  if (
-    !req.body ||
-    typeof req.body !== "object" ||
-    Array.isArray(req.body) ||
-    Object.keys(req.body).length === 0
-  ) {
-    return res.status(400).json({
-      message: "Debes enviar los datos que deseas actualizar"
-    });
-  }
-
+  } 
   try {
     const updatedService = await servicesService.updateService(
       id,
@@ -84,16 +72,7 @@ export const updateService = async (req, res, next) => {
       return res.status(404).json({
         message: error.message
       });
-    }
-
-    if (
-      error.message === "Los datos del servicio son inválidos"
-    ) {
-      return res.status(400).json({
-        message: error.message
-      });
-    }
-
+    }  
     return next(error);
   }
 };
