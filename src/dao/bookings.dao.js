@@ -25,7 +25,11 @@ const toDTO = (booking) => {
 };
 
 const mapServiceReferences = async (services = []) => {
-  const serviceIds = services.map((item) => item.service);
+  const serviceIds = services.map((item) =>
+    typeof item.service === "object"
+      ? item.service.id
+      : item.service
+  );
 
   const serviceDocuments = await ServiceModel.find({
     id: { $in: serviceIds },
@@ -38,7 +42,12 @@ const mapServiceReferences = async (services = []) => {
   );
 
   return services.map((item) => {
-    const serviceObjectId = servicesById.get(item.service);
+    const serviceId =
+      typeof item.service === "object"
+        ? item.service.id
+        : item.service;
+
+    const serviceObjectId = servicesById.get(serviceId);
 
     if (!serviceObjectId) {
       throw new Error("Servicio no encontrado");

@@ -10,9 +10,12 @@ class BookingsService {
     this.servicesRepository = servicesRepository;
   }
 
-  async createBooking(data) {
-    return await this.repository.create(data);
-  }
+ async createBooking(data) {
+  return await this.bookingsRepository.create({
+    ...data,
+    services: [],
+  });
+}
 async getBookingById(id) {
   const booking = await this.bookingsRepository.getById(id);
 
