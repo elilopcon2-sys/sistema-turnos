@@ -38,9 +38,14 @@ async addServiceToBooking(bookingId, serviceId) {
     throw new Error("Servicio no encontrado");
   }
 
-  const existingService = booking.services.find(
-    item => item.service === serviceId
-  );
+  const existingService = booking.services.find((item) => {
+    const currentServiceId =
+      typeof item.service === "object"
+        ? item.service.id
+        : item.service;
+
+      return currentServiceId === serviceId;
+    });
 
   if (existingService) {
     existingService.quantity += 1;
