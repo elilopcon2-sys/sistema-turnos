@@ -5,26 +5,80 @@ class ServicesService {
     this.repository = repository;
   }
   
-  async getServices(filters = {}) {
-  let services = await this.repository.getAll();
+  async getServices(query = {}) {
+    const {
+      category,
+      available,
+      page = 1,
+      limit = 10,
+      sortBy = "id",
+      order = "asc",
+    } = query;
 
-  const { category, available } = filters;
+    // 1. Construir filtros para MongoDB
+    const filters = {};
 
-  if (category) {
-    services = services.filter(
-      service => service.category === category
-    );
+    if (category) {
+      filters.category = category;
+    }
+
+    if (available !== undefined) {
+      filters.available = available === "true";
+    }
+
+    // 2. Paginación
+    const currentPage = Math.max(Number(page), 1);
+    const currentLimit = Math.max(Number(limit), 1);
+
+    const skip = (currentPage - 1) * currentLimit;
+
+    // 3. Ordenamiento
+    const allowedSortFields = [
+      "id",
+      "name",
+      "duration",
+      "price",
+      "category",
+      "available",
+    ];
+
+    const selectedSortField = allowedSortFields.includes(sortBy)
+      ? sortBy
+      : "id";
+
+    const sortOrder = order === "desc" ? -1 : 1;
+
+    const sort = {
+      [selectedSortField]: sortOrder,
+    };
+
+    // 4. Consultar MongoDB
+    const [services, total] = await Promise.all([
+      this.repository.getAll({
+        filters,
+        skip,
+        limit: currentLimit,
+        sort,
+      }),
+
+      this.repository.count(filters),
+    ]);
+
+    // 5. Metadatos de paginación
+    const totalPages = Math.ceil(total / currentLimit);
+
+    return {
+      services,
+      pagination: {
+        total,
+        page: currentPage,
+        limit: currentLimit,
+        totalPages,
+        hasPrevPage: currentPage > 1,
+        hasNextPage: currentPage < totalPages,
+      },
+    };
   }
-
-  if (available !== undefined) {
-    const availableBoolean = available === "true";
-
-    services = services.filter(
-      service => service.available === availableBoolean
-    );
-  }
-  return services;  
-}
     async getServiceById(id) {
     const service = await this.repository.getById(id);
 

@@ -17,12 +17,23 @@ const toDTO = (service) => {
 };
 
 class ServicesDao {
-  async getAll() {
-    const services = await ServiceModel.find().lean();
+async getAll({
+  filters = {},
+  skip = 0,
+  limit = 10,
+  sort = { id: 1 },
+} = {}) {
+  const services = await ServiceModel.find(filters)
+    .sort(sort)
+    .skip(skip)
+    .limit(limit)
+    .lean();
 
-    return services.map(toDTO);
-  }
-
+  return services.map(toDTO);
+}
+  async count(filters = {}) {
+  return await ServiceModel.countDocuments(filters);
+}
   async getById(id) {
     const service = await ServiceModel.findOne({ id }).lean();
 

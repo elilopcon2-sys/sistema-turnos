@@ -2,9 +2,9 @@ import ServicesService from "../services/services.service.js";
 const servicesService = new ServicesService();
 
 export const getServices = async (req, res) => {
-  const services = await servicesService.getServices(req.query);
+  const result = await servicesService.getServices(req.query);
 
-  return res.status(200).json(services);
+  return res.status(200).json(result);
 };
 
 export const getServiceById = async (req, res) => {
@@ -15,7 +15,6 @@ export const getServiceById = async (req, res) => {
       message: "El ID del servicio debe ser un entero positivo"
     });
   }
-
   try {
     const service = await servicesService.getServiceById(id);
 

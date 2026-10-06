@@ -18,14 +18,9 @@ const toDTO = (booking) => {
   return {
     ...bookingData,
     services: services.map((item) => ({
-      service:
-        item.service &&
-        typeof item.service === "object" &&
-        typeof item.service.id === "number"
-          ? item.service.id
-          : item.service,
-      quantity: item.quantity,
-    })),
+    service: item.service,
+    quantity: item.quantity,
+  })),
   };
 };
 
@@ -60,9 +55,9 @@ class BookingsDao {
   async getById(id) {
     const booking = await BookingModel.findOne({ id })
       .populate({
-        path: "services.service",
-        select: "id",
-      })
+      path: "services.service",
+      select: "id name description duration price category available",
+    })
       .lean();
 
     return toDTO(booking);
@@ -100,7 +95,7 @@ class BookingsDao {
     )
       .populate({
         path: "services.service",
-        select: "id",
+        select: "id name description duration price category available",
       })
       .lean();
 
