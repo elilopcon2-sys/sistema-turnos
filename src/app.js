@@ -14,6 +14,6 @@ app.use(express.static("public"));
 
 app.use("/api/services", servicesRouter); 
 app.use("/api/bookings", bookingsRouter);
-app.use("/views", viewsRouter);
+app.use("/", viewsRouter);
 
 export default app;

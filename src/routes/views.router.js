@@ -8,7 +8,7 @@ import {
 const router = Router();
 
 router.get("/services", renderServices);
-router.get("/availability", renderAvailability);
+router.get("/realtime-services", renderAvailability);
 router.get("/services/:sid", renderServiceDetail);
 
 export default router;
