@@ -14,11 +14,11 @@ export const renderServices = async (req, res, next) => {
 
 export const renderAvailability = async (req, res, next) => {
   try {
-    const services = await servicesService.getServices({
+    const result = await servicesService.getServices({
       available: "true"
     });
 
-    res.render("availability", { services });
+    res.render("availability", { services: result.services });
   } catch (error) {
     next(error);
   }
