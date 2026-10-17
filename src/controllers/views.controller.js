@@ -32,6 +32,9 @@ export const renderServiceDetail = async (req, res, next) => {
 
     res.render("service-detail", { service });
   } catch (error) {
+    if (error.message === "Servicio no encontrado") {
+      error.statusCode = 404;
+    }
     next(error);
   }
 };
@@ -43,6 +46,9 @@ export const renderBookingDetail = async (req, res, next) => {
 
     res.render("booking-detail", { booking });
   } catch (error) {
+    if (error.message === "Reserva no encontrada") {
+      error.statusCode = 404;
+    }
     next(error);
   }
 };

@@ -4,6 +4,10 @@ import servicesRouter from "./routes/services.router.js";
 import bookingsRouter from "./routes/bookings.router.js";
 import { engine } from "express-handlebars";
 import viewsRouter from "./routes/views.router.js";
+import {
+  errorHandler,
+  notFoundHandler,
+} from "./middlewares/error.middleware.js";
 
 const app = express();
 app.engine("handlebars", engine());
@@ -15,5 +19,7 @@ app.use(express.static("public"));
 app.use("/api/services", servicesRouter); 
 app.use("/api/bookings", bookingsRouter);
 app.use("/", viewsRouter);
+app.use(notFoundHandler);
+app.use(errorHandler);
 
 export default app;
