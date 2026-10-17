@@ -59,9 +59,14 @@ export const updateService = async (req, res, next) => {
   } 
   try {
     const updatedService = await servicesService.updateService(
-      id,
-      req.body
-    );
+  id,
+  req.body
+);
+    const io = req.app.get("io");
+
+    if (io) {
+      io.emit("service:updated", updatedService);
+    }
 
     return res.status(200).json(updatedService);
 
@@ -87,6 +92,11 @@ export const deleteService = async (req, res) => {
 
   try {
     const deletedService = await servicesService.deleteService(id);
+    const io = req.app.get("io");
+
+    if (io) {
+      io.emit("service:deleted", deletedService);
+    }
 
     return res.status(200).json(deletedService);
 
