@@ -42,3 +42,25 @@ export const addServiceToBookingSchema = z.object({
       .positive("El ID del servicio debe ser mayor a 0"),
   }),
 });
+export const updateServiceQuantitySchema = z.object({
+  params: z.object({
+    bid: z.coerce
+      .number()
+      .int("El ID de la reserva debe ser un entero")
+      .positive("El ID de la reserva debe ser mayor a 0"),
+
+    sid: z.coerce
+      .number()
+      .int("El ID del servicio debe ser un entero")
+      .positive("El ID del servicio debe ser mayor a 0"),
+  }),
+
+  body: z.object({
+    quantity: z
+      .number({
+        message: "La cantidad debe ser un número",
+      })
+      .int("La cantidad debe ser un entero")
+      .positive("La cantidad debe ser mayor a 0"),
+  }),
+});

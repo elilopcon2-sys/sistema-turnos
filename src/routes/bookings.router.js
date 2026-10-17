@@ -3,12 +3,14 @@ import { validate } from "../middlewares/validate.middleware.js";
 import {
   createBookingSchema,
   addServiceToBookingSchema,
+  updateServiceQuantitySchema,
 } from "../validations/booking.validation.js";
 import {
   createBooking,
   getBookings,
   getBookingById,
   addServiceToBooking,
+  updateServiceQuantity,
 } from "../controllers/bookings.controller.js";
 
 const router = Router();
@@ -29,5 +31,10 @@ router.post(
   validate(addServiceToBookingSchema),
   addServiceToBooking
 );
-
+// Actualiza la cantidad de un servicio dentro de una reserva 
+router.put(
+  "/:bid/services/:sid",
+  validate(updateServiceQuantitySchema),
+  updateServiceQuantity
+);
 export default router;

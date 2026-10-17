@@ -84,3 +84,29 @@ export const addServiceToBooking = async (req, res) => {
     throw error;
   }
 };
+
+export const updateServiceQuantity = async (req, res, next) => {
+  const bookingId = Number(req.params.bid);
+  const serviceId = Number(req.params.sid);
+
+  try {
+    const updatedBooking = await bookingsService.updateServiceQuantity(
+      bookingId,
+      serviceId,
+      req.body.quantity
+    );
+
+    return res.status(200).json(updatedBooking);
+  } catch (error) {
+    if (
+      error.message === "Reserva no encontrada" ||
+      error.message === "El servicio no está asociado a la reserva"
+    ) {
+      return res.status(404).json({
+        message: error.message,
+      });
+    }
+
+    return next(error);
+  }
+};
