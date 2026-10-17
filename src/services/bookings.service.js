@@ -9,14 +9,16 @@ class BookingsService {
     this.bookingsRepository = bookingsRepository;
     this.servicesRepository = servicesRepository;
   }
-
+  async getBookings() {
+    return await this.bookingsRepository.getAll();
+  }
  async createBooking(data) {
-  return await this.bookingsRepository.create({
-    ...data,
-    services: [],
-  });
-}
-async getBookingById(id) {
+    return await this.bookingsRepository.create({
+      ...data,
+      services: [],
+    });
+  }
+  async getBookingById(id) {
   const booking = await this.bookingsRepository.getById(id);
 
   if (!booking) {

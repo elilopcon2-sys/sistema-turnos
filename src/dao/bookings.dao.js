@@ -61,6 +61,18 @@ const mapServiceReferences = async (services = []) => {
 };
 
 class BookingsDao {
+
+  async getAll() {
+  const bookings = await BookingModel.find()
+    .sort({ id: 1 })
+    .populate({
+      path: "services.service",
+      select: "id name description duration price category available",
+    })
+    .lean();
+
+    return bookings.map(toDTO);
+  }
   async getById(id) {
     const booking = await BookingModel.findOne({ id })
       .populate({

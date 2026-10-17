@@ -4,7 +4,9 @@ class BookingsRepository {
   constructor(dao = new BookingsDao()) {
     this.dao = dao;
   }
-
+    getAll() {
+    return this.dao.getAll();
+  }
   create(data) {
     return this.dao.create(data);
   }

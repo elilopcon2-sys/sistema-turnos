@@ -1,6 +1,15 @@
 import BookingsService from "../services/bookings.service.js";
 const bookingsService = new BookingsService();
 
+export const getBookings = async (req, res, next) => {
+  try {
+    const bookings = await bookingsService.getBookings();
+
+    return res.status(200).json(bookings);
+  } catch (error) {
+    next(error);
+  }
+};
 
 export const createBooking = async (req, res) => {
   try {

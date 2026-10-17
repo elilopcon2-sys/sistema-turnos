@@ -5,11 +5,16 @@ import {
   addServiceToBookingSchema,
 } from "../validations/booking.validation.js";
 import {
-   createBooking,
-   getBookingById,
-   addServiceToBooking } from "../controllers/bookings.controller.js";
+  createBooking,
+  getBookings,
+  getBookingById,
+  addServiceToBooking,
+} from "../controllers/bookings.controller.js";
 
 const router = Router();
+
+// Obtener reservas
+router.get("/", getBookings);
 // Crear una reserva
 router.post(
   "/",
