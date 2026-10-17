@@ -4,9 +4,9 @@ const servicesService = new ServicesService();
 
 export const renderServices = async (req, res, next) => {
   try {
-    const services = await servicesService.getServices();
+    const result = await servicesService.getServices();
 
-    res.render("services", { services });
+    res.render("services", { services: result.services });
   } catch (error) {
     next(error);
   }
