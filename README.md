@@ -119,6 +119,7 @@ Copia el archivo de ejemplo para crear tu configuración local:
 
 ```bash
 cp .env.example .env
+```
 
 ```env
 PORT=8080
@@ -450,6 +451,7 @@ Controller emite evento Socket.IO
 /realtime-services recibe el evento
         ↓
 La vista se actualiza sin recargar
+```
 
 ## Manejo de errores
 
