@@ -110,3 +110,28 @@ export const updateServiceQuantity = async (req, res, next) => {
     return next(error);
   }
 };
+
+export const removeServiceFromBooking = async (req, res, next) => {
+  const bookingId = Number(req.params.bid);
+  const serviceId = Number(req.params.sid);
+
+  try {
+    const updatedBooking = await bookingsService.removeServiceFromBooking(
+      bookingId,
+      serviceId
+    );
+
+    return res.status(200).json(updatedBooking);
+  } catch (error) {
+    if (
+      error.message === "Reserva no encontrada" ||
+      error.message === "El servicio no está asociado a la reserva"
+    ) {
+      return res.status(404).json({
+        message: error.message,
+      });
+    }
+
+    return next(error);
+  }
+};

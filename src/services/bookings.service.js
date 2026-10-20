@@ -87,6 +87,31 @@ async updateServiceQuantity(bookingId, serviceId, quantity) {
 
   return await this.bookingsRepository.update(bookingId, booking);
 }
+async removeServiceFromBooking(bookingId, serviceId) {
+  const booking = await this.bookingsRepository.getById(bookingId);
+
+  if (!booking) {
+    throw new Error("Reserva no encontrada");
+  }
+
+  const serviceIndex = booking.services.findIndex((item) => {
+    const currentServiceId =
+      typeof item.service === "object"
+        ? item.service.id
+        : item.service;
+
+    return currentServiceId === serviceId;
+  });
+
+  if (serviceIndex === -1) {
+    throw new Error("El servicio no está asociado a la reserva");
+  }
+
+  booking.services.splice(serviceIndex, 1);
+
+  return await this.bookingsRepository.update(bookingId, booking);
+}
+
 }
 
 export default BookingsService;

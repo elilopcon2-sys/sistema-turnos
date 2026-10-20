@@ -11,6 +11,7 @@ import {
   getBookingById,
   addServiceToBooking,
   updateServiceQuantity,
+  removeServiceFromBooking,
 } from "../controllers/bookings.controller.js";
 
 const router = Router();
@@ -23,8 +24,10 @@ router.post(
   validate(createBookingSchema),
   createBooking
 );
+
 // Consultar una reserva por su ID
 router.get("/:bid", getBookingById);
+
 // Agregar un servicio a una reserva
 router.post(
   "/:bid/services/:sid",
@@ -36,5 +39,11 @@ router.put(
   "/:bid/services/:sid",
   validate(updateServiceQuantitySchema),
   updateServiceQuantity
+);
+// Elimina un servicio asociado de una reserva
+router.delete(
+  "/:bid/services/:sid",
+  validate(addServiceToBookingSchema),
+  removeServiceFromBooking
 );
 export default router;
