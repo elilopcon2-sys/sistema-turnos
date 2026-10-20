@@ -35,6 +35,17 @@ Responsabilidad de cada capa:
 - **Models:** define los schemas de las colecciones.
 - **Validations:** contiene los esquemas de validación con Zod.
 
+## Diagramas
+
+### Flujo general de la aplicación
+
+![Flujo general de la aplicación](./docs/flujo-aplicacion.png)
+
+### Flujo de actualizaciones en tiempo real
+
+![Flujo de actualizaciones en tiempo real](./docs/flujo-tiempo-real.png)
+
+
 ## Estructura del proyecto
 
 ```text
