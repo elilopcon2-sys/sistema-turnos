@@ -54,6 +54,7 @@ src/
 │   ├── bookings.dao.js
 │   └── services.dao.js
 ├── middlewares/
+│   ├── error.middleware.js
 │   └── validate.middleware.js
 ├── repositories/
 │   ├── bookings.repository.js
@@ -72,6 +73,9 @@ src/
 │   ├── layouts/
 │   │   └── main.handlebars
 │   ├── availability.handlebars
+│   ├── booking-detail.handlebars
+│   ├── error.handlebars
+│   ├── service-detail.handlebars
 │   └── services.handlebars
 ├── app.js
 └── server.js
@@ -98,7 +102,12 @@ Instala las dependencias:
 npm install
 ```
 
-Crea un archivo `.env` en la raíz del proyecto:
+## Variables de entorno
+
+Copia el archivo de ejemplo para crear tu configuración local:
+
+```bash
+cp .env.example .env
 
 ```env
 PORT=8080
@@ -119,6 +128,18 @@ El servidor se ejecuta en:
 ```text
 http://localhost:8080
 ```
+## Funcionalidades principales
+
+- Gestión completa de servicios: creación, consulta, actualización y eliminación.
+- Filtros, paginación y ordenamiento de servicios.
+- Gestión de reservas y asociación de servicios.
+- Actualización de cantidades y eliminación de servicios dentro de una reserva.
+- Eliminación completa de reservas.
+- Relaciones entre reservas y servicios mediante referencias de MongoDB y `populate()`.
+- Vistas dinámicas con Handlebars.
+- Actualizaciones en tiempo real con Socket.IO.
+- Validaciones de datos con Zod.
+- Manejo controlado de errores para API y vistas.
 
 ## API REST
 
@@ -299,9 +320,13 @@ Ejemplo:
 
 | Método | Ruta | Descripción |
 |---|---|---|
-| POST | `/api/bookings` | Crea una reserva. |
-| GET | `/api/bookings/:bid` | Obtiene una reserva con los servicios asociados completos. |
-| POST | `/api/bookings/:bid/services/:sid` | Agrega un servicio a una reserva. |
+| GET | `/api/bookings` | Obtiene todas las reservas con sus servicios asociados. |
+| POST | `/api/bookings` | Crea una reserva vacía. |
+| GET | `/api/bookings/:bid` | Obtiene una reserva por ID con `populate()`. |
+| POST | `/api/bookings/:bid/services/:sid` | Agrega un servicio a una reserva o incrementa su cantidad. |
+| PUT | `/api/bookings/:bid/services/:sid` | Actualiza la cantidad de un servicio asociado. |
+| DELETE | `/api/bookings/:bid/services/:sid` | Quita un servicio de una reserva. |
+| DELETE | `/api/bookings/:bid` | Elimina una reserva completa. |
 
 ### Ejemplo para crear una reserva
 
@@ -377,10 +402,12 @@ En MongoDB se mantiene almacenada la referencia `ObjectId`, no el objeto complet
 
 Handlebars permite renderizar HTML desde Express usando datos reales de MongoDB.
 
-| Ruta | Descripción |
-|---|---|
-| GET `/views/services` | Muestra todos los servicios. |
-| GET `/views/availability` | Muestra únicamente los servicios disponibles. |
+| Método | Ruta | Descripción |
+|---|---|---|
+| GET | `/services` | Muestra todos los servicios. |
+| GET | `/services/:sid` | Muestra el detalle de un servicio. |
+| GET | `/realtime-services` | Muestra los servicios disponibles y recibe actualizaciones en tiempo real. |
+| GET | `/bookings/:bid` | Muestra una reserva con sus servicios asociados completos. |
 
 Las vistas usan la misma arquitectura del proyecto:
 
@@ -390,38 +417,40 @@ views.router → views.controller → services.service → repository → DAO �
 
 No hay servicios escritos manualmente en los archivos `.handlebars`: la información siempre proviene de la base de datos.
 
-## Tiempo real con Socket.io
+## Tiempo real con Socket.IO
 
-Socket.io permite actualizar la vista de disponibilidad sin recargar el navegador.
+La vista `/realtime-services` utiliza Socket.IO para reflejar cambios sin recargar el navegador.
+
+| Evento | Cuándo se emite | Comportamiento en la vista |
+|---|---|---|
+| `service:created` | Se crea un servicio. | Agrega una tarjeta si el servicio está disponible. |
+| `service:updated` | Se actualiza un servicio. | Actualiza, agrega o elimina la tarjeta según su disponibilidad. |
+| `service:deleted` | Se elimina un servicio. | Quita la tarjeta correspondiente. |
 
 Flujo:
 
 ```text
-POST /api/services
+Postman o cliente HTTP
         ↓
-services.controller crea el servicio
+API REST modifica MongoDB
         ↓
-Socket.io emite "service:created"
+Controller emite evento Socket.IO
         ↓
-public/js/socket.js recibe el evento
+/realtime-services recibe el evento
         ↓
-/views/availability agrega el servicio automáticamente
-```
+La vista se actualiza sin recargar
 
-La actualización ocurre solamente si el servicio creado tiene:
+## Manejo de errores
 
-```json
-{
-  "available": true
-}
-```
+La API valida los datos de entrada con Zod y devuelve respuestas claras según el caso.
 
-## Prueba manual de Socket.io
-
-1. Inicia el servidor con `npm start`.
-2. Abre `http://localhost:8080/views/availability`.
-3. Sin recargar esa página, crea un servicio disponible mediante `POST /api/services`.
-4. El nuevo servicio debe aparecer automáticamente en la vista.
+| Situación | Código | Respuesta |
+|---|---:|---|
+| Datos inválidos o incompletos | `400` | JSON con el detalle de validación. |
+| Recurso inexistente | `404` | JSON con un mensaje descriptivo. |
+| Ruta de API inexistente | `404` | JSON con el mensaje `La ruta solicitada no existe.` |
+| Vista inexistente o recurso no encontrado | `404` | Página HTML amigable con enlace para volver a servicios. |
+| Error inesperado | `500` | Respuesta controlada sin exponer detalles técnicos. |
 
 ## Persistencia
 
@@ -451,6 +480,44 @@ Cada elemento del arreglo `services` contiene:
 service: ObjectId
 quantity: Number
 ```
+## Pruebas manuales
+
+El proyecto puede verificarse con Postman, Thunder Client o una herramienta similar. A continuación se detallan los endpoints y comportamientos principales que deben validarse:
+
+### Servicios
+
+- `GET /api/services`
+- `GET /api/services/:sid`
+- `POST /api/services`
+- `PUT /api/services/:sid`
+- `DELETE /api/services/:sid`
+- Filtros, paginación y ordenamiento mediante query params.
+
+### Reservas
+
+- `GET /api/bookings`
+- `POST /api/bookings`
+- `GET /api/bookings/:bid`
+- `POST /api/bookings/:bid/services/:sid`
+- `PUT /api/bookings/:bid/services/:sid`
+- `DELETE /api/bookings/:bid/services/:sid`
+- `DELETE /api/bookings/:bid`
+- Consulta de una reserva con servicios completos mediante `populate()`.
+
+### Casos de error
+
+- Consultar un servicio o reserva inexistente.
+- Crear un servicio con datos incompletos.
+- Enviar una cantidad inválida, como `0` o un texto.
+- Agregar a una reserva un servicio inexistente.
+- Consultar rutas web y de API inexistentes.
+
+### Vistas y tiempo real
+
+- Abrir `/services`, `/realtime-services` y `/bookings/:bid`.
+- Crear un servicio disponible y verificar que aparezca sin recargar.
+- Cambiar disponibilidad y verificar que desaparezca o reaparezca.
+- Eliminar un servicio y verificar que desaparezca sin recargar.
 
 ## Seguridad
 
