@@ -60,7 +60,6 @@ src/
 ├── dao/
 │   ├── models/
 │   │   ├── booking.model.js
-│   │   ├── message.model.js
 │   │   └── service.model.js
 │   ├── bookings.dao.js
 │   └── services.dao.js
