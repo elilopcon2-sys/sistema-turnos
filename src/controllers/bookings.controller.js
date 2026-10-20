@@ -135,3 +135,27 @@ export const removeServiceFromBooking = async (req, res, next) => {
     return next(error);
   }
 };
+
+export const deleteBooking = async (req, res, next) => {
+  const id = Number(req.params.bid);
+
+  if (!Number.isSafeInteger(id) || id <= 0) {
+    return res.status(400).json({
+      message: "El ID de la reserva debe ser un entero positivo",
+    });
+  }
+
+  try {
+    const deletedBooking = await bookingsService.deleteBooking(id);
+
+    return res.status(200).json(deletedBooking);
+  } catch (error) {
+    if (error.message === "Reserva no encontrada") {
+      return res.status(404).json({
+        message: error.message,
+      });
+    }
+
+    return next(error);
+  }
+};

@@ -12,6 +12,7 @@ import {
   addServiceToBooking,
   updateServiceQuantity,
   removeServiceFromBooking,
+  deleteBooking,
 } from "../controllers/bookings.controller.js";
 
 const router = Router();
@@ -46,4 +47,7 @@ router.delete(
   validate(addServiceToBookingSchema),
   removeServiceFromBooking
 );
+// Elimina una Reserva 
+router.delete("/:bid", deleteBooking);
+
 export default router;

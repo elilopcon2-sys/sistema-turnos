@@ -87,6 +87,7 @@ async updateServiceQuantity(bookingId, serviceId, quantity) {
 
   return await this.bookingsRepository.update(bookingId, booking);
 }
+
 async removeServiceFromBooking(bookingId, serviceId) {
   const booking = await this.bookingsRepository.getById(bookingId);
 
@@ -111,7 +112,15 @@ async removeServiceFromBooking(bookingId, serviceId) {
 
   return await this.bookingsRepository.update(bookingId, booking);
 }
+async deleteBooking(id) {
+  const booking = await this.bookingsRepository.getById(id);
 
+  if (!booking) {
+    throw new Error("Reserva no encontrada");
+  }
+
+  return await this.bookingsRepository.delete(id);
+}
 }
 
 export default BookingsService;

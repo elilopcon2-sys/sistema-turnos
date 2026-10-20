@@ -122,6 +122,12 @@ class BookingsDao {
 
     return toDTO(updatedBooking);
   }
+  
+  async delete(id) {
+  const deletedBooking = await BookingModel.findOneAndDelete({ id }).lean();
+
+    return toDTO(deletedBooking);
+  }
 }
 
 export default BookingsDao;
