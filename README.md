@@ -493,7 +493,7 @@ quantity: Number
 ```
 ## Pruebas manuales
 
-El proyecto puede verificarse con Postman, Thunder Client o una herramienta similar. A continuación se detallan los endpoints y comportamientos principales que deben validarse:
+Se realizaron pruebas manuales con Postman o Thunder Client sobre los siguientes endpoints y comportamientos:
 
 ### Servicios
 
